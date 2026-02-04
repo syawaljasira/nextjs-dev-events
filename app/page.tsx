@@ -1,12 +1,23 @@
 import EventCard from "@/components/EventCard";
 import ExploreBtn from "@/components/ExploreBtn";
-import { events } from "@/lib/constants";
+import { IEvent } from "@/database";
+import { cacheLife } from "next/cache";
+import { notFound } from "next/navigation";
 
-const Page = () => {
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
+const Page = async () => {
+  "use cache";
+  cacheLife("hours");
+  const response = await fetch(`${BASE_URL}/api/events`);
+  const { events } = await response.json();
+
+  if (!events) return notFound();
+
   return (
     <section>
       <h1 className="text-center">
-        The Hub for Every Dev <br /> Event You Can't Miss
+        The Hub for Every Dev <br /> Event You Can&apos;t Miss
       </h1>
       <p className="text-center mt-5">
         Hackathons, Meetups, and Conferences, All in One Place
@@ -20,7 +31,7 @@ const Page = () => {
         <ul className="events">
           {events &&
             events.length > 0 &&
-            events.map((event) => (
+            events.map((event: IEvent) => (
               <li key={event.title} className="list-none">
                 <EventCard {...event} />
               </li>
