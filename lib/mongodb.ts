@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 
+import * as dns from "dns";
+
+// Fix DNS resolution issue
+dns.setDefaultResultOrder("ipv4first");
+
 // Define the connection cache type
 type MongooseCache = {
   conn: typeof mongoose | null;
@@ -15,7 +20,7 @@ declare global {
 const MONGODB_URI = process.env.MONGODB_URI;
 
 // Initialize the cache on the global object to persist across hot reloads in development
-const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
 
 if (!global.mongoose) {
   global.mongoose = cached;
@@ -40,7 +45,6 @@ async function connectDB(): Promise<typeof mongoose> {
         "Please define the MONGODB_URI environment variable inside .env.local",
       );
     }
-
     const options = {
       bufferCommands: false, // Disable Mongoose buffering
     };
